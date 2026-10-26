@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Mirtilos com Gotas</title>
+<meta name="description" content="Protótipo de hero: mirtilos molhados caindo em 4K, quadro a quadro com o scroll.">
+<meta name="theme-color" content="#020619">
+<link rel="icon" href="assets/simbolo-240.webp">
+<link rel="preload" as="image" href="q/hd/001.webp" media="(orientation: landscape)">
+<link rel="preload" as="image" href="q/m/001.webp" media="(orientation: portrait)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Saira:wdth,wght@100..125,500..800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --abismo: #020619;
+  --noite: #050D2E;
+  --eletrico: #2563FF;
+  --ciano: #7CD4FF;
+  --texto: #EAF3FF;
+  --texto-2: #9DB2DD;
+  --linha: rgba(124, 212, 255, .18);
+  --brilho-titulo: linear-gradient(100deg, #FFFFFF 0%, #DDF2FF 38%, #7CD4FF 78%, #5C8CFF 100%);
+  --brilho-botao: linear-gradient(100deg, #2563FF 0%, #3F86FF 45%, #7CD4FF 100%);
+  --display: "Saira", "Manrope", system-ui, sans-serif;
+  --sans: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ease: cubic-bezier(.16, .84, .32, 1);
+  --mola: cubic-bezier(.32, .72, 0, 1);
+  --gutter: clamp(16px, 5vw, 56px);
+  --chanfro: 14px;
+  --estrela: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 0C12.9 7.2 16.8 11.1 24 12C16.8 12.9 12.9 16.8 12 24C11.1 16.8 7.2 12.9 0 12C7.2 11.1 11.1 7.2 12 0Z'/%3E%3C/svg%3E");
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { background: var(--abismo); -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--abismo); color: var(--texto);
+  font-family: var(--sans); font-size: 17px; line-height: 1.65;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+h1, h2 { font-family: var(--display); font-stretch: 125%; font-weight: 700; margin: 0; letter-spacing: -.012em; }
+:focus-visible { outline: 2px solid var(--ciano); outline-offset: 3px; }
+a { color: inherit; }
+
+/* ---------- topo ---------- */
+.topo {
+  position: fixed; inset: 0 0 auto; z-index: 20;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: calc(18px + env(safe-area-inset-top)) var(--gutter) 0;
+  pointer-events: none;
+}
+.marca { display: flex; align-items: center; gap: 12px; text-decoration: none; pointer-events: auto; }
+.marca img { width: 38px; height: 38px; filter: drop-shadow(0 0 12px rgba(63, 134, 255, .55)); }
+.marca span { font: 600 1.05rem/1 var(--sans); letter-spacing: .01em; }
+.contador {
+  font: 600 .74rem/1 var(--display); font-stretch: 118%; letter-spacing: .18em; color: var(--ciano);
+  font-variant-numeric: tabular-nums; pointer-events: none;
+}
+.contador b { color: var(--texto); font-weight: 600; }
+
+/* ---------- hero ---------- */
+.hero { position: relative; height: 340vh; height: 340svh; }
+.palco { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; background: var(--abismo); }
+.palco canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.palco::after { /* sombra do lado do texto: legibilidade sem tapar as frutas */
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(2, 6, 25, .82) 0%, rgba(2, 6, 25, .45) 34%, rgba(2, 6, 25, 0) 58%),
+    linear-gradient(0deg, rgba(2, 6, 25, .7) 0%, rgba(2, 6, 25, 0) 26%);
+}
+.falas { position: absolute; inset: 0; z-index: 2; display: grid; align-items: center; padding: 0 var(--gutter); }
+.fala {
+  grid-area: 1 / 1; max-width: min(620px, 52vw);
+  opacity: 0; transform: translateY(28px); filter: blur(8px);
+  transition: opacity .9s var(--ease), transform 1.1s var(--mola), filter .9s var(--ease);
+}
+.fala.on { opacity: 1; transform: none; filter: none; }
+.chapeu {
+  display: inline-flex; align-items: center; gap: 10px; margin-bottom: 22px;
+  font: 600 .76rem/1 var(--display); font-stretch: 112%; letter-spacing: .2em; text-transform: uppercase; color: var(--ciano);
+}
+.chapeu::before {
+  content: ""; width: 14px; height: 14px; flex: none;
+  background: linear-gradient(135deg, #fff, var(--ciano) 55%, var(--eletrico));
+  -webkit-mask: var(--estrela) center / contain no-repeat; mask: var(--estrela) center / contain no-repeat;
+  filter: drop-shadow(0 0 6px rgba(124, 212, 255, .9));
+}
+.fala h1, .fala h2 {
+  font-size: clamp(2.1rem, 1rem + 4vw, 4.6rem); line-height: 1.02; text-wrap: balance; margin-bottom: 24px;
+  background: var(--brilho-titulo); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.fala p { font-size: clamp(1.02rem, .96rem + .3vw, 1.2rem); color: var(--texto-2); max-width: 44ch; margin: 0 0 30px; }
+
+.btn {
+  --corte: polygon(0 0, calc(100% - var(--chanfro)) 0, 100% var(--chanfro), 100% 100%, var(--chanfro) 100%, 0 calc(100% - var(--chanfro)));
+  position: relative; isolation: isolate; display: inline-flex; align-items: center; gap: 18px;
+  min-height: 56px; padding: 0 8px 0 24px;
+  font: 700 .8rem/1 var(--display); font-stretch: 118%; letter-spacing: .1em; text-transform: uppercase; text-decoration: none;
+  color: var(--abismo); clip-path: var(--corte);
+  transition: transform .5s var(--mola), filter .5s var(--mola);
+}
+.btn::before { content: ""; position: absolute; inset: 0; z-index: -2; background: var(--brilho-botao); }
+.btn::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(105deg, transparent 30%, rgba(255,255,255,.55) 48%, transparent 66%);
+  transform: translateX(-120%); transition: transform .9s var(--mola);
+}
+.btn:hover { filter: drop-shadow(0 0 18px rgba(63, 134, 255, .65)); }
+.btn:hover::after { transform: translateX(120%); }
+.btn:active { transform: scale(.975); }
+.btn-seta {
+  display: grid; place-items: center; width: 40px; height: 40px; flex: none;
+  background: rgba(2, 6, 25, .9); color: var(--ciano);
+  clip-path: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+}
+.btn-seta svg { width: 16px; height: 16px; }
+
+/* régua de progresso: mostra que o quadro anda junto com o scroll */
+.regua {
+  position: absolute; z-index: 3; left: var(--gutter); right: var(--gutter); bottom: calc(26px + env(safe-area-inset-bottom));
+  display: flex; align-items: center; gap: 16px;
+  font: 600 .7rem/1 var(--display); font-stretch: 115%; letter-spacing: .2em; text-transform: uppercase; color: var(--texto-2);
+}
+.regua-trilho { position: relative; flex: 1; height: 1px; background: var(--linha); }
+.regua-trilho i {
+  position: absolute; left: 0; top: -1px; height: 3px; width: 100%;
+  background: var(--brilho-botao); transform-origin: left; transform: scaleX(0);
+  box-shadow: 0 0 12px rgba(124, 212, 255, .7);
+}
+.carregando { transition: opacity .6s var(--ease); }
+.carregando[data-pronto] { opacity: 0; }
+
+/* ---------- depois do hero ---------- */
+.depois { position: relative; z-index: 1; padding: clamp(96px, 12vw, 176px) var(--gutter); max-width: 1240px; margin: 0 auto; }
+.depois h2 { font-size: clamp(1.8rem, 1rem + 3vw, 3.2rem); line-height: 1.06; margin-bottom: 22px; max-width: 18ch;
+  background: var(--brilho-titulo); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.depois p { color: var(--texto-2); max-width: 60ch; }
+.rodape { padding: 32px var(--gutter) calc(32px + env(safe-area-inset-bottom)); border-top: 1px solid var(--linha);
+  font: 600 .72rem/1 var(--display); font-stretch: 115%; letter-spacing: .22em; text-transform: uppercase; color: var(--texto-2); text-align: center; }
+
+@media (orientation: portrait), (max-width: 760px) {
+  .palco::after {
+    background: linear-gradient(180deg, rgba(2, 6, 25, .15) 0%, rgba(2, 6, 25, .2) 38%, rgba(2, 6, 25, .88) 78%, rgba(2, 6, 25, .95) 100%);
+  }
+  .falas { align-items: end; padding-bottom: calc(92px + env(safe-area-inset-bottom)); }
+  .fala { max-width: none; }
+  .fala p { margin-bottom: 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .fala { transition: opacity .3s linear; transform: none; filter: none; }
+}
+</style>
+</head>
+<body>
+
+<header class="topo">
+  <a class="marca" href="#topo" aria-label="On-Berry, início">
+    <img src="assets/simbolo-240.webp" alt="" width="38" height="38"><span>On-Berry</span>
+  </a>
+  <div class="contador" aria-hidden="true"><b id="quadro">001</b> / 120</div>
+</header>
+
+<main id="topo">
+  <section class="hero" id="hero" aria-label="Apresentação">
+    <div class="palco">
+      <canvas id="tela" aria-hidden="true"></canvas>
+
+      <div class="falas">
+        <div class="fala on" data-de="0" data-ate="0.3">
+          <span class="chapeu">Vale do São Francisco</span>
+          <h1>Mirtilo fresco, direto do Vale.</h1>
+          <p>Berries e uvas do Vale do São Francisco, com cultivo sustentável.</p>
+          <a class="btn" href="#depois">
+            Conhecer
+            <span class="btn-seta"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v12M3 9l5 5 5-5"/></svg></span>
+          </a>
+        </div>
+        <div class="fala" data-de="0.3" data-ate="0.64">
+          <span class="chapeu">Cultivo sustentável</span>
+          <h2>Cultivo pensado para durar.</h2>
+          <p>Produzido no Vale do São Francisco.</p>
+        </div>
+        <div class="fala" data-de="0.64" data-ate="1.01">
+          <span class="chapeu">Fresh &amp; Natural</span>
+          <h2>Mirtilo em bandeja de 125 g.</h2>
+          <p>Role para continuar.</p>
+        </div>
+      </div>
+
+      <div class="regua" aria-hidden="true">
+        <span class="carregando" id="carregando">Carregando 0%</span>
+        <div class="regua-trilho"><i id="barra"></i></div>
+        <span>Role</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="depois" id="depois">
+    <span class="chapeu">Próxima seção</span>
+    <h2>Aqui o site segue normalmente.</h2>
+    <p>O hero acima é uma sequência de 120 quadros renderizados em 4K no Blender. A página toca um quadro por posição de rolagem, então a queda dos mirtilos e das gotas anda exatamente junto com o scroll, para frente e para trás. Parado, ele segue caindo devagar, em loop sem corte.</p>
+  </section>
+</main>
+
+<footer class="rodape">Site por L R G Z</footer>
+
+<script>
+(() => {
+  const N = 120;
+  const IDLE_FPS = 9;          // queda lenta quando ninguém rola
+  const VOLTAS = 1;            // quantos loops da animação cabem na rolagem do hero
+  const reduzido = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const tela = document.getElementById("tela");
+  const ctx = tela.getContext("2d", { alpha: false });
+  const hero = document.getElementById("hero");
+  const falas = [...document.querySelectorAll(".fala")];
+  const barra = document.getElementById("barra");
+  const rotulo = document.getElementById("quadro");
+  const carregando = document.getElementById("carregando");
+
+  // qual sequência: em pé usa o recorte vertical; deitado escolhe pela largura física
+  function escolheSet() {
+    if (innerHeight > innerWidth) return "m";
+    return innerWidth * Math.min(devicePixelRatio || 1, 2) >= 2600 ? "4k" : "hd";
+  }
+  let set = escolheSet();
+  let quadros = [];
+
+  // ordem de carga em camadas (1 a cada 16, depois 8, 4, 2, 1): o scroll já tem cobertura cedo
+  function ordem() {
+    const vistos = new Set(), lista = [];
+    for (const passo of [16, 8, 4, 2, 1])
+      for (let i = 0; i < N; i += passo) if (!vistos.has(i)) { vistos.add(i); lista.push(i); }
+    return lista;
+  }
+
+  function carrega() {
+    const atual = set;
+    quadros = new Array(N).fill(null);
+    let prontos = 0;
+    const fila = ordem();
+    let ativos = 0;
+    const MAX = 6;
+    function proximo() {
+      while (ativos < MAX && fila.length) {
+        const i = fila.shift();
+        const img = new Image();
+        img.decoding = "async";
+        img.src = `q/${atual}/${String(i + 1).padStart(3, "0")}.webp`;
+        ativos++;
+        const fim = () => {
+          ativos--;
+          if (atual !== set) return;
+          prontos++;
+          carregando.textContent = `Carregando ${Math.round(prontos / N * 100)}%`;
+          if (prontos === N) carregando.dataset.pronto = "";
+          proximo();
+        };
+        img.decode().then(() => { if (atual === set) { quadros[i] = img; desenhado = -1; } fim(); }).catch(fim);
+      }
+    }
+    proximo();
+  }
+
+  function maisPerto(i) {
+    if (quadros[i]) return quadros[i];
+    for (let d = 1; d < N / 2; d++) {
+      const a = quadros[(i - d + N) % N], b = quadros[(i + d) % N];
+      if (a || b) return a || b;
+    }
+    return null;
+  }
+
+  function dimensiona() {
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    const w = Math.round(tela.clientWidth * dpr), h = Math.round(tela.clientHeight * dpr);
+    if (tela.width !== w || tela.height !== h) { tela.width = w; tela.height = h; desenhado = -1; }
+    const novo = escolheSet();
+    if (novo !== set) { set = novo; carrega(); }
+  }
+
+  let desenhado = -1;
+  function desenha(i) {
+    const img = maisPerto(i);
+    if (!img) return;
+    const chave = quadros[i] ? i : -2 - i;
+    if (chave === desenhado) return;
+    desenhado = chave;
+    const W = tela.width, H = tela.height;
+    const s = Math.max(W / img.naturalWidth, H / img.naturalHeight);
+    const w = img.naturalWidth * s, h = img.naturalHeight * s;
+    ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+  }
+
+  function progresso() {
+    const r = hero.getBoundingClientRect();
+    const total = r.height - innerHeight;
+    return Math.min(1, Math.max(0, -r.top / total));
+  }
+
+  let ocioso = 0, pos = 0, antes = performance.now(), ultimaFala = -1;
+  function quadro(agora) {
+    const dt = Math.min(0.05, (agora - antes) / 1000);
+    antes = agora;
+    const p = progresso();
+    if (!reduzido) ocioso += dt * IDLE_FPS;
+    const alvo = ocioso + p * N * VOLTAS;
+    // inércia curta: segue o scroll colado, sem tranco quando a roda do mouse pula
+    pos += (alvo - pos) * (1 - Math.exp(-dt * 12));
+    const i = ((Math.round(pos) % N) + N) % N;
+    desenha(i);
+    rotulo.textContent = String(i + 1).padStart(3, "0");
+    barra.style.transform = `scaleX(${p})`;
+
+    const f = falas.findIndex(el => p >= +el.dataset.de && p < +el.dataset.ate);
+    if (f !== ultimaFala) {
+      falas.forEach((el, k) => el.classList.toggle("on", k === f));
+      ultimaFala = f;
+    }
+    requestAnimationFrame(quadro);
+  }
+
+  addEventListener("resize", dimensiona);
+  dimensiona();
+  carrega();
+  requestAnimationFrame(quadro);
+})();
+</script>
+</body>
+</html>
